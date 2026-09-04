@@ -1,0 +1,25 @@
+# 构建目录与临时文件
+build/
+build_release/
+Release_Package/
+*.zip
+.qtcreator/
+*.user
+*.user.*
+# 编译生成的中间产物与二进制文件
+*.o
+*.obj
+*.exe
+*.dll
+*.a
+*.so
+*.dylib
+Makefile*
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+# 日志与系统文件
+*.log
+.DS_Store
+Thumbs.db
+EOF
