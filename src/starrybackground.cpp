@@ -132,12 +132,21 @@ void StarryBackground::paintEvent(QPaintEvent *event) {
     int w = width();
     int h = height();
 
-    // 1. 渲染深邃宇宙背景渐变
+    bool isMax = (window() && window()->isMaximized());
+    double r = isMax ? 0.0 : 14.0;
+
+    QPainterPath roundPath;
+    roundPath.addRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), r, r);
+
+    // 1. 开启抗锯齿圆角裁切并渲染深邃宇宙背景渐变
+    painter.save();
+    painter.setClipPath(roundPath);
+
     QLinearGradient bgGrad(0, 0, w, h);
     bgGrad.setColorAt(0.0, QColor(6, 10, 22));      // 顶部黑夜
     bgGrad.setColorAt(0.5, QColor(10, 18, 38));     // 中部幽邃星云蓝
     bgGrad.setColorAt(1.0, QColor(4, 7, 16));       // 底部深空
-    painter.fillRect(rect(), bgGrad);
+    painter.fillPath(roundPath, bgGrad);
 
     // 2. 渲染柔和星云光晕 (Nebula Glow)
     QRadialGradient nebula1(w * 0.2, h * 0.3, w * 0.45);
@@ -204,5 +213,29 @@ void StarryBackground::paintEvent(QPaintEvent *event) {
         painter.setBrush(headColor);
         painter.setPen(Qt::NoPen);
         painter.drawEllipse(s.currentPos, 2.0, 2.0);
+    }
+
+    painter.restore(); // 恢复裁切
+
+    // 5. 渲染双层极光柔和科技感微光边框 (Soft Aurora Luminous Border)
+    if (!isMax) {
+        // 外层：柔和极光微晕发光层 (Soft Aura)
+        QPen softAuraPen(QColor(0, 240, 255, 28), 2.6);
+        softAuraPen.setJoinStyle(Qt::RoundJoin);
+        painter.setPen(softAuraPen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRoundedRect(QRectF(rect()).adjusted(1.2, 1.2, -1.2, -1.2), r - 1.0, r - 1.0);
+
+        // 内层：主科技青蓝精细线条 (Crisp Neon Core)
+        QPen corePen(QColor(0, 240, 255, 85), 1.0);
+        corePen.setJoinStyle(Qt::RoundJoin);
+        painter.setPen(corePen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), r, r);
+    } else {
+        QPen borderPen(QColor(0, 240, 255, 50), 1.0);
+        painter.setPen(borderPen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(rect().adjusted(0, 0, -1, -1));
     }
 }

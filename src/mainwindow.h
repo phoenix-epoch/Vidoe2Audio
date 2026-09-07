@@ -10,6 +10,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class StarryTitleBar;
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -20,6 +22,10 @@ public:
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void changeEvent(QEvent *event) override;
+#if defined(Q_OS_WIN)
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+#endif
 
 private slots:
     // 导航槽函数
@@ -46,6 +52,7 @@ private slots:
     void onLocalFFmpegFinished(bool success, const QString &outputFilePath, const QString &errorMsg);
 
     // 网络工作台槽函数
+    void onUrlTargetModeChanged();
     void onPasteUrl();
     void onBrowseUrlOutputDir();
     void onStartOrCancelUrlClicked();
@@ -71,6 +78,7 @@ private:
     QString getDesktopPath() const;
 
     Ui::MainWindow *ui;
+    StarryTitleBar *m_titleBar;
 
     // 本地引擎
     FFmpegHelper *m_ffmpegHelper;

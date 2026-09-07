@@ -5,11 +5,24 @@
 #include <QString>
 #include <QProcess>
 
+enum class UrlExtractTarget {
+    Audio,   // 提取纯音频 (MP3/M4A/WAV/FLAC)
+    Video    // 下载完整高清视频 (MP4/MKV)
+};
+
 struct UrlExtractionOptions {
+    UrlExtractTarget extractTarget;  // Audio 还是 Video
     QString url;
     QString outputDirectory;
-    QString targetFormat;    // 如 "mp3", "m4a", "wav", "flac"
+    
+    // 音频选项
+    QString targetFormat;    // 如 "MP3", "M4A", "WAV", "FLAC"
     QString audioQuality;    // "0" (最佳 320k), "2" (高质量 256k), "5" (标准 192k), "8" (轻量 128k)
+
+    // 视频选项
+    QString videoResolution; // "best", "1080", "720", "480"
+    QString videoContainer;  // "mp4", "mkv"
+
     bool singleVideoOnly;    // 是否强制仅单视频 (--no-playlist)
 };
 

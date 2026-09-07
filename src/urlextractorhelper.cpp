@@ -19,7 +19,6 @@ QString UrlExtractorHelper::findYtDlpBinary() {
     QString appDir = QCoreApplication::applicationDirPath();
     QDir dir(appDir);
 
-    // 1. 沿运行目录向上逐级追溯查找 tools/yt-dlp.exe 或 yt-dlp.exe
     for (int i = 0; i <= 6; ++i) {
         QString checkTools = dir.filePath("tools/yt-dlp.exe");
         if (QFileInfo::exists(checkTools)) return QFileInfo(checkTools).absoluteFilePath();
@@ -30,7 +29,6 @@ QString UrlExtractorHelper::findYtDlpBinary() {
         if (!dir.cdUp()) break;
     }
 
-    // 2. 检查固定工程目录
     static const QStringList fallbackPaths = {
         "E:/AiToy/video/tools/yt-dlp.exe",
         "E:/AiToy/video/Release_Package/StarryAudioExtractor/tools/yt-dlp.exe",
@@ -41,7 +39,6 @@ QString UrlExtractorHelper::findYtDlpBinary() {
         if (QFileInfo::exists(p)) return p;
     }
 
-    // 3. 检查环境变量 PATH
     QString sysExe = QStandardPaths::findExecutable("yt-dlp");
     if (!sysExe.isEmpty()) return sysExe;
 
@@ -79,18 +76,36 @@ void UrlExtractorHelper::startExtraction(const QString &ffmpegPath, const UrlExt
         args << "--ffmpeg-location" << ffmpegPath;
     }
 
-    args << "-x";
-    args << "--audio-format" << options.targetFormat.toLower();
-    args << "--audio-quality" << options.audioQuality;
+    if (options.extractTarget == UrlExtractTarget::Audio) {
+        // 提取纯音频模式
+        args << "-x";
+        args << "--audio-format" << options.targetFormat.toLower();
+        args << "--audio-quality" << options.audioQuality;
+        emit logMessage(QString("🌐 开始解析网络视频并提取音频: %1 (目标格式: %2)").arg(options.url, options.targetFormat), "INFO");
+    } else {
+        // 下载完整高清视频模式
+        QString formatRule = "bestvideo+bestaudio/best";
+        if (options.videoResolution == "1080") {
+            formatRule = "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best";
+        } else if (options.videoResolution == "720") {
+            formatRule = "bestvideo[height<=720]+bestaudio/best[height<=720]/best";
+        } else if (options.videoResolution == "480") {
+            formatRule = "bestvideo[height<=480]+bestaudio/best[height<=480]/best";
+        }
+        args << "-f" << formatRule;
+        args << "--merge-output-format" << options.videoContainer.toLower(); // 默认 mp4
+        args << "--remux-video" << options.videoContainer.toLower();
+        emit logMessage(QString("🎬 开始解析并下载网络高清视频: %1 (封装格式: %2, 目标清晰度: %3)")
+                            .arg(options.url, options.videoContainer.toUpper(), options.videoResolution), "INFO");
+    }
+
     args << "-o" << outTemplate;
     args << options.url.trimmed();
 
-    emit logMessage(QString("🌐 开始解析网络视频地址: %1").arg(options.url), "INFO");
-    emit logMessage(QString("💾 目标音频输出目录: %1").arg(options.outputDirectory), "INFO");
+    emit logMessage(QString("💾 目标输出目录 (默认桌面): %1").arg(options.outputDirectory), "INFO");
     emit started();
     emit progressUpdated(0, "0 KB/s", "--:--");
 
-    // 动态启动进程：提取开始时自动启动
     m_process = new QProcess(this);
     m_process->setProcessChannelMode(QProcess::MergedChannels);
 
@@ -104,10 +119,10 @@ void UrlExtractorHelper::startExtraction(const QString &ffmpegPath, const UrlExt
 
 void UrlExtractorHelper::cancel() {
     if (m_process && m_process->state() != QProcess::NotRunning) {
-        emit logMessage("⏹️ 用户终止了网络提取任务，正在自动关闭引擎...", "WARNING");
+        emit logMessage("⏹️ 用户终止了网络下载/提取任务，正在自动关闭引擎...", "WARNING");
         m_process->kill();
         m_process->waitForFinished(1000);
-        emit logMessage("⏹️ 网络提取引擎已关闭。", "INFO");
+        emit logMessage("⏹️ 网络提取引擎已安全退出关闭。", "INFO");
     }
 }
 
@@ -137,6 +152,7 @@ void UrlExtractorHelper::parseYtDlpLine(const QString &line) {
     QString trimmed = line.trimmed();
     if (trimmed.isEmpty()) return;
 
+    // 1. 捕获下载进度与速度: [download]  45.2% of ~  12.34MiB at    3.50MiB/s ETA 00:05
     if (trimmed.startsWith("[download]")) {
         static QRegularExpression progRegex(R"(\[download\]\s+(\d+(?:\.\d+)?)%\s+of\s+[~]?\s*([\d\.]+[A-Za-z]+)\s+at\s+([\d\.]+[A-Za-z/]+)\s+ETA\s+(\d{2}:\d{2}))");
         QRegularExpressionMatch match = progRegex.match(trimmed);
@@ -153,6 +169,7 @@ void UrlExtractorHelper::parseYtDlpLine(const QString &line) {
         }
     }
 
+    // 2. 捕获纯音频抽取产物路径: [ExtractAudio] Destination: ...
     if (trimmed.contains("[ExtractAudio] Destination:")) {
         QString dest = trimmed.section("[ExtractAudio] Destination:", 1).trimmed();
         if (!dest.isEmpty()) {
@@ -162,7 +179,38 @@ void UrlExtractorHelper::parseYtDlpLine(const QString &line) {
         }
     }
 
-    if (trimmed.startsWith("[info]") || trimmed.startsWith("[download] Destination")) {
+    // 3. 捕获高清视频音画合流产物路径: [Merger] Merging formats into "..."
+    if (trimmed.contains("[Merger] Merging formats into")) {
+        QString dest = trimmed.section("[Merger] Merging formats into", 1).trimmed();
+        dest = dest.remove('"').trimmed();
+        if (!dest.isEmpty()) {
+            m_lastOutputFile = dest;
+            emit logMessage(QString("🎬 音视频高精合流完成: %1").arg(QFileInfo(dest).fileName()), "SUCCESS");
+            return;
+        }
+    }
+
+    // 4. 捕获视频重封装路径: [VideoRemuxer] Remuxing video from ... to "..."
+    if (trimmed.contains("[VideoRemuxer] Remuxing video from")) {
+        QString dest = trimmed.section(" to ", 1).trimmed();
+        dest = dest.remove('"').trimmed();
+        if (!dest.isEmpty()) {
+            m_lastOutputFile = dest;
+            emit logMessage(QString("🎬 视频封装格式转换完成: %1").arg(QFileInfo(dest).fileName()), "SUCCESS");
+            return;
+        }
+    }
+
+    // 5. 捕获常规单文件下载完成目标
+    if (trimmed.startsWith("[download] Destination:")) {
+        QString dest = trimmed.section("[download] Destination:", 1).trimmed();
+        m_lastOutputFile = dest;
+        emit logMessage(trimmed, "INFO");
+        return;
+    }
+
+    // 6. 状态与错误捕获
+    if (trimmed.startsWith("[info]")) {
         emit logMessage(trimmed, "INFO");
     } else if (trimmed.startsWith("ERROR:")) {
         emit logMessage(trimmed, "ERROR");
@@ -173,12 +221,31 @@ void UrlExtractorHelper::onProcessFinished(int exitCode, QProcess::ExitStatus ex
     bool success = (exitStatus == QProcess::NormalExit && exitCode == 0);
 
     if (success) {
+        // 如果最后输出文件未被直接行捕获，从目标目录查找最新生成的文件
+        if (m_lastOutputFile.isEmpty() || !QFileInfo::exists(m_lastOutputFile)) {
+            QDir dir(m_currentOptions.outputDirectory);
+            QStringList filters;
+            if (m_currentOptions.extractTarget == UrlExtractTarget::Video) {
+                filters << "*.mp4" << "*.mkv" << "*.webm" << "*.flv";
+            } else {
+                filters << "*.mp3" << "*.m4a" << "*.wav" << "*.flac" << "*.aac" << "*.ogg";
+            }
+            QFileInfoList files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
+            if (!files.isEmpty()) {
+                m_lastOutputFile = files.first().absoluteFilePath();
+            }
+        }
+
         emit progressUpdated(100, "已完成", "00:00");
-        emit logMessage(QString("🎉 网络音频提取成功！已直接保存至桌面"), "SUCCESS");
-        emit logMessage("⏹️ 网络提取引擎已自动完成并退出。", "INFO");
+        if (m_currentOptions.extractTarget == UrlExtractTarget::Video) {
+            emit logMessage("🎉 网络高清视频下载完成！已直接保存至桌面", "SUCCESS");
+        } else {
+            emit logMessage("🎉 网络音频提取完成！已直接保存至桌面", "SUCCESS");
+        }
+        emit logMessage("⏹️ 网络提取引擎任务完成，已自动退出关闭。", "INFO");
         emit extractionFinished(true, m_currentOptions.outputDirectory, m_lastOutputFile, "");
     } else {
-        QString errMsg = QString("网络提取失败 (错误代码: %1)").arg(exitCode);
+        QString errMsg = QString("网络处理失败 (错误代码: %1)").arg(exitCode);
         emit logMessage(QString("❌ %1").arg(errMsg), "ERROR");
         emit logMessage("⏹️ 网络提取引擎已自动关闭退出。", "INFO");
         emit extractionFinished(false, m_currentOptions.outputDirectory, "", errMsg);

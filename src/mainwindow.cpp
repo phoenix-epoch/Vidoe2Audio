@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "starrytitlebar.h"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDesktopServices>
@@ -14,13 +15,24 @@
 #include <QClipboard>
 #include <QMessageBox>
 
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#include <windowsx.h>
+#endif
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
+      m_titleBar(nullptr),
       m_ffmpegHelper(new FFmpegHelper(this)),
       m_currentVideoDurationSec(0.0),
       m_urlHelper(new UrlExtractorHelper(this))
 {
+    // 启用无边框星空科技窗口，保留系统最小化/还原手势与任务栏联动
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setMouseTracking(true);
+
     ui->setupUi(this);
     setAcceptDrops(true);
 
@@ -46,6 +58,11 @@ QString MainWindow::getDesktopPath() const {
 }
 
 void MainWindow::setupUiCustom() {
+    // 0. 装配星空科技感自定义标题栏 (置于主界面最顶部)
+    m_titleBar = new StarryTitleBar(this);
+    m_titleBar->updateMaximizeButton(isMaximized());
+    ui->bgLayout->insertWidget(0, m_titleBar);
+
     // 1. 导航按钮绑定
     connect(ui->modeCardLocal, &QPushButton::clicked, this, &MainWindow::onEnterLocalMode);
     connect(ui->modeCardUrl, &QPushButton::clicked, this, &MainWindow::onEnterUrlMode);
@@ -89,6 +106,17 @@ void MainWindow::setupUiCustom() {
     connect(m_ffmpegHelper, &FFmpegHelper::extractionFinished, this, &MainWindow::onLocalFFmpegFinished);
 
     // 3. 网络工作台组件初始化
+    ui->urlVideoResCombo->addItems({
+        "🌟 最佳清晰度 (原画 4K/2K/1080P 推荐)",
+        "1080P 全高清 (1920x1080)",
+        "720P 高清 (1280x720)",
+        "480P 标清 (854x480)"
+    });
+    ui->urlVideoResCombo->setCurrentIndex(0);
+
+    ui->urlVideoFormatCombo->addItems({"MP4 (最兼容推荐)", "MKV (全轨道高阶封装)"});
+    ui->urlVideoFormatCombo->setCurrentIndex(0);
+
     ui->urlFormatCombo->addItems({"MP3", "M4A", "WAV", "FLAC"});
     ui->urlFormatCombo->setCurrentText("MP3");
 
@@ -96,6 +124,9 @@ void MainWindow::setupUiCustom() {
     ui->urlQualityCombo->setCurrentIndex(0);
 
     ui->urlOutputPathEdit->setText(getDesktopPath());
+
+    connect(ui->radioUrlVideo, &QRadioButton::toggled, this, &MainWindow::onUrlTargetModeChanged);
+    connect(ui->radioUrlAudio, &QRadioButton::toggled, this, &MainWindow::onUrlTargetModeChanged);
 
     connect(ui->pasteUrlBtn, &QPushButton::clicked, this, &MainWindow::onPasteUrl);
     connect(ui->browseUrlOutputBtn, &QPushButton::clicked, this, &MainWindow::onBrowseUrlOutputDir);
@@ -449,12 +480,27 @@ void MainWindow::onPasteUrl() {
     }
 }
 
+void MainWindow::onUrlTargetModeChanged() {
+    bool isVideo = ui->radioUrlVideo->isChecked();
+    ui->urlModeStack->setCurrentIndex(isVideo ? 0 : 1);
+
+    if (isVideo) {
+        ui->startUrlBtn->setText("🚀 开始解析并下载高清视频 (MP4)");
+        ui->playUrlAudioBtn->setText("🎬 播放下载视频");
+        ui->urlProgressTitle->setText("⚡ 网络视频下载与处理进度:");
+    } else {
+        ui->startUrlBtn->setText("🚀 开始解析并提取网络音频");
+        ui->playUrlAudioBtn->setText("🎵 播放提取音频");
+        ui->urlProgressTitle->setText("⚡ 网络音频下载与转码进度:");
+    }
+}
+
 void MainWindow::onBrowseUrlOutputDir() {
     QString current = ui->urlOutputPathEdit->text().trimmed();
-    QString folder = QFileDialog::getExistingDirectory(this, "选择网络音频保存目录", current);
+    QString folder = QFileDialog::getExistingDirectory(this, "选择文件保存目录", current);
     if (!folder.isEmpty()) {
         ui->urlOutputPathEdit->setText(folder);
-        appendUrlLog(QString("💾 已更新网络保存目录: %1").arg(folder), "INFO");
+        appendUrlLog(QString("💾 已更新保存目录: %1").arg(folder), "INFO");
     }
 }
 
@@ -479,14 +525,28 @@ void MainWindow::onStartOrCancelUrlClicked() {
     UrlExtractionOptions opt;
     opt.url = url;
     opt.outputDirectory = outDir;
-    opt.targetFormat = ui->urlFormatCombo->currentText();
     opt.singleVideoOnly = ui->singleVideoCheck->isChecked();
 
-    int qIdx = ui->urlQualityCombo->currentIndex();
-    if (qIdx == 0) opt.audioQuality = "0"; // 最佳 320k
-    else if (qIdx == 1) opt.audioQuality = "2"; // 256k
-    else if (qIdx == 2) opt.audioQuality = "5"; // 192k
-    else opt.audioQuality = "8"; // 128k
+    bool isVideo = ui->radioUrlVideo->isChecked();
+    opt.extractTarget = isVideo ? UrlExtractTarget::Video : UrlExtractTarget::Audio;
+
+    if (isVideo) {
+        int resIdx = ui->urlVideoResCombo->currentIndex();
+        if (resIdx == 0) opt.videoResolution = "best";
+        else if (resIdx == 1) opt.videoResolution = "1080";
+        else if (resIdx == 2) opt.videoResolution = "720";
+        else if (resIdx == 3) opt.videoResolution = "480";
+        else opt.videoResolution = "best";
+
+        opt.videoContainer = (ui->urlVideoFormatCombo->currentIndex() == 1) ? "mkv" : "mp4";
+    } else {
+        opt.targetFormat = ui->urlFormatCombo->currentText();
+        int qIdx = ui->urlQualityCombo->currentIndex();
+        if (qIdx == 0) opt.audioQuality = "0"; // 最佳 320k
+        else if (qIdx == 1) opt.audioQuality = "2"; // 256k
+        else if (qIdx == 2) opt.audioQuality = "5"; // 192k
+        else opt.audioQuality = "8"; // 128k
+    }
 
     m_urlTimer.restart();
     m_urlHelper->startExtraction(FFmpegHelper::findFFmpegBinary(), opt);
@@ -495,7 +555,8 @@ void MainWindow::onStartOrCancelUrlClicked() {
 void MainWindow::onUrlYtDlpStarted() {
     setUrlExtractionUiState(true);
     ui->urlProgressBar->setValue(0);
-    ui->urlProgressDetailLabel->setText("🚀 正在分析网络网页多媒体流...");
+    bool isVideo = ui->radioUrlVideo->isChecked();
+    ui->urlProgressDetailLabel->setText(isVideo ? "🚀 正在分析网络高清视频流..." : "🚀 正在分析网络音频流...");
 }
 
 void MainWindow::onUrlYtDlpLog(const QString &message, const QString &type) {
@@ -512,6 +573,7 @@ void MainWindow::onUrlYtDlpProgress(int percentage, const QString &speedStr, con
 void MainWindow::onUrlYtDlpFinished(bool success, const QString &outputFolder, const QString &lastExtractedFile, const QString &errorMsg) {
     Q_UNUSED(errorMsg);
     setUrlExtractionUiState(false);
+    bool isVideo = ui->radioUrlVideo->isChecked();
 
     if (success) {
         m_lastUrlAudioPath = lastExtractedFile;
@@ -519,25 +581,50 @@ void MainWindow::onUrlYtDlpFinished(bool success, const QString &outputFolder, c
         if (!lastExtractedFile.isEmpty() && QFileInfo::exists(lastExtractedFile)) {
             ui->playUrlAudioBtn->setEnabled(true);
         }
-        ui->urlProgressDetailLabel->setText("🎉 网络视频音频提取完成！(已保存至桌面)");
+        if (isVideo) {
+            ui->urlProgressDetailLabel->setText("🎉 网络高清视频下载完成！(已保存至桌面)");
+            ui->playUrlAudioBtn->setText("🎬 播放下载视频");
+        } else {
+            ui->urlProgressDetailLabel->setText("🎉 网络视频音频提取完成！(已保存至桌面)");
+            ui->playUrlAudioBtn->setText("🎵 播放提取音频");
+        }
     } else {
-        ui->urlProgressDetailLabel->setText("❌ 网络提取中止或发生错误");
+        ui->urlProgressDetailLabel->setText("❌ 网络任务中止或发生错误");
     }
 }
 
 void MainWindow::setUrlExtractionUiState(bool extracting) {
+    bool isVideo = ui->radioUrlVideo->isChecked();
     if (extracting) {
-        ui->startUrlBtn->setText("⏹️ 终止提取任务");
+        ui->startUrlBtn->setText("⏹️ 终止任务");
         ui->startUrlBtn->setObjectName("cancelActionBtn");
         ui->startUrlBtn->setStyle(ui->startUrlBtn->style());
+        ui->radioUrlVideo->setEnabled(false);
+        ui->radioUrlAudio->setEnabled(false);
+        ui->urlVideoResCombo->setEnabled(false);
+        ui->urlVideoFormatCombo->setEnabled(false);
+        ui->urlFormatCombo->setEnabled(false);
+        ui->urlQualityCombo->setEnabled(false);
+        ui->singleVideoCheck->setEnabled(false);
         ui->pasteUrlBtn->setEnabled(false);
         ui->browseUrlOutputBtn->setEnabled(false);
         ui->openUrlFolderBtn->setEnabled(false);
         ui->playUrlAudioBtn->setEnabled(false);
     } else {
-        ui->startUrlBtn->setText("🚀 开始解析并提取网络音频");
+        if (isVideo) {
+            ui->startUrlBtn->setText("🚀 开始解析并下载高清视频 (MP4)");
+        } else {
+            ui->startUrlBtn->setText("🚀 开始解析并提取网络音频");
+        }
         ui->startUrlBtn->setObjectName("primaryActionBtn");
         ui->startUrlBtn->setStyle(ui->startUrlBtn->style());
+        ui->radioUrlVideo->setEnabled(true);
+        ui->radioUrlAudio->setEnabled(true);
+        ui->urlVideoResCombo->setEnabled(true);
+        ui->urlVideoFormatCombo->setEnabled(true);
+        ui->urlFormatCombo->setEnabled(true);
+        ui->urlQualityCombo->setEnabled(true);
+        ui->singleVideoCheck->setEnabled(true);
         ui->pasteUrlBtn->setEnabled(true);
         ui->browseUrlOutputBtn->setEnabled(true);
     }
@@ -616,3 +703,63 @@ void MainWindow::dropEvent(QDropEvent *event) {
         }
     }
 }
+
+void MainWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::WindowStateChange) {
+        if (m_titleBar) {
+            m_titleBar->updateMaximizeButton(isMaximized());
+        }
+    }
+    QMainWindow::changeEvent(event);
+}
+
+#if defined(Q_OS_WIN)
+bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result) {
+    if (eventType == "windows_generic_MSG") {
+        MSG *msg = static_cast<MSG *>(message);
+        switch (msg->message) {
+        case WM_NCHITTEST: {
+            int x = GET_X_LPARAM(msg->lParam);
+            int y = GET_Y_LPARAM(msg->lParam);
+            QPoint pos = mapFromGlobal(QPoint(x, y));
+
+            const int border = 8;
+            bool left = (pos.x() <= border);
+            bool right = (pos.x() >= width() - border);
+            bool top = (pos.y() <= border);
+            bool bottom = (pos.y() >= height() - border);
+
+            // 边缘缩放判定 (窗口最大化时不响应边缘缩放)
+            if (!isMaximized()) {
+                if (top && left) { *result = HTTOPLEFT; return true; }
+                if (top && right) { *result = HTTOPRIGHT; return true; }
+                if (bottom && left) { *result = HTBOTTOMLEFT; return true; }
+                if (bottom && right) { *result = HTBOTTOMRIGHT; return true; }
+                if (left) { *result = HTLEFT; return true; }
+                if (right) { *result = HTRIGHT; return true; }
+                if (top) { *result = HTTOP; return true; }
+                if (bottom) { *result = HTBOTTOM; return true; }
+            }
+            break;
+        }
+        case WM_GETMINMAXINFO: {
+            MINMAXINFO *mmi = reinterpret_cast<MINMAXINFO *>(msg->lParam);
+            HMONITOR hMonitor = MonitorFromWindow(msg->hwnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi;
+            mi.cbSize = sizeof(MONITORINFO);
+            if (GetMonitorInfo(hMonitor, &mi)) {
+                mmi->ptMaxPosition.x = abs(mi.rcWork.left - mi.rcMonitor.left);
+                mmi->ptMaxPosition.y = abs(mi.rcWork.top - mi.rcMonitor.top);
+                mmi->ptMaxSize.x = abs(mi.rcWork.right - mi.rcWork.left);
+                mmi->ptMaxSize.y = abs(mi.rcWork.bottom - mi.rcWork.top);
+            }
+            *result = 0;
+            return true;
+        }
+        default:
+            break;
+        }
+    }
+    return QMainWindow::nativeEvent(eventType, message, result);
+}
+#endif

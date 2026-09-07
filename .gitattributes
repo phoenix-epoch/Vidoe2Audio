@@ -1,0 +1,2 @@
+StarryAudioExtractor_v1.0.0_Release_x64.zip filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text

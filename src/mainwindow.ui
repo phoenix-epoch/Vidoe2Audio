@@ -143,11 +143,11 @@
              <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="text">
-             <string>🌐 网络网址提取模式
+             <string>🌐 网络视频/音频提取模式
 
-• 支持 B站 / 抖音 / YouTube 等网页视频
-• 支持 m3u8 / mp4 网络流媒体直链
-• 粘贴链接一键极速下载并转码为音频</string>
+• 🎬 输入网址下载完整高清视频 (MP4)
+• 🎵 一键提取分离多格式纯音频
+• 支持 B站 / 抖音 / YouTube 等主流平台</string>
             </property>
            </widget>
           </item>
@@ -799,7 +799,7 @@
                <item>
                 <widget class="QCheckBox" name="singleVideoCheck">
                  <property name="text">
-                  <string>仅提取当前单视频音频 (如果是合集/播放列表则忽略后续剧集)</string>
+                  <string>仅下载当前单视频/单音频 (如果是合集或播放列表则忽略后续分P)</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -813,58 +813,179 @@
             <item>
              <widget class="QGroupBox" name="urlSettingsGroup">
               <property name="title">
-               <string>⚙️ 目标音频配置与保存路径 (Audio Settings)</string>
+               <string>⚙️ 目标参数配置与保存路径 (Settings)</string>
               </property>
-              <layout class="QGridLayout" name="urlSettingsGrid">
-               <property name="horizontalSpacing">
-                <number>12</number>
-               </property>
-               <property name="verticalSpacing">
+              <layout class="QVBoxLayout" name="urlSettingsOuterLayout">
+               <property name="spacing">
                 <number>8</number>
                </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="urlFormatLbl">
-                 <property name="text">
-                  <string>目标音频格式:</string>
+               <item>
+                <layout class="QHBoxLayout" name="urlModeChoiceRow">
+                 <item>
+                  <widget class="QLabel" name="urlTargetModeLbl">
+                   <property name="text">
+                    <string>提取目标模式:</string>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font-weight: bold; color: #00f0ff;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioUrlVideo">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>🎬 下载完整高清视频 (MP4)</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioUrlAudio">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>🎵 提取分离纯音频 (MP3/M4A...)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="urlModeSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QStackedWidget" name="urlModeStack">
+                 <property name="currentIndex">
+                  <number>0</number>
                  </property>
+                 <!-- 视频选项页 -->
+                 <widget class="QWidget" name="urlVideoPage">
+                  <layout class="QHBoxLayout" name="urlVideoLayout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>12</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="urlVideoResLbl">
+                     <property name="text">
+                      <string>视频清晰度:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="urlVideoResCombo"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="urlVideoFormatLbl">
+                     <property name="text">
+                      <string>封装格式:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="urlVideoFormatCombo"/>
+                   </item>
+                  </layout>
+                 </widget>
+                 <!-- 音频选项页 -->
+                 <widget class="QWidget" name="urlAudioPage">
+                  <layout class="QHBoxLayout" name="urlAudioLayout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>12</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="urlFormatLbl">
+                     <property name="text">
+                      <string>目标音频格式:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="urlFormatCombo"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="urlQualityLbl">
+                     <property name="text">
+                      <string>音频输出音质:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="urlQualityCombo"/>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QComboBox" name="urlFormatCombo"/>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="urlQualityLbl">
-                 <property name="text">
-                  <string>音频输出音质:</string>
+               <item>
+                <layout class="QHBoxLayout" name="urlOutputRow">
+                 <property name="spacing">
+                  <number>10</number>
                  </property>
-                </widget>
-               </item>
-               <item row="0" column="3">
-                <widget class="QComboBox" name="urlQualityCombo"/>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="urlOutputLbl">
-                 <property name="text">
-                  <string>音频保存目录:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1" colspan="2">
-                <widget class="QLineEdit" name="urlOutputPathEdit">
-                 <property name="placeholderText">
-                  <string>默认保存至桌面...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3">
-                <widget class="QPushButton" name="browseUrlOutputBtn">
-                 <property name="cursor">
-                  <cursorShape>PointingHandCursor</cursorShape>
-                 </property>
-                 <property name="text">
-                  <string>📂 更改目录...</string>
-                 </property>
-                </widget>
+                 <item>
+                  <widget class="QLabel" name="urlOutputLbl">
+                   <property name="text">
+                    <string>文件保存目录:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="urlOutputPathEdit">
+                   <property name="placeholderText">
+                    <string>默认保存至桌面...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="browseUrlOutputBtn">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>📂 更改目录...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -880,7 +1001,7 @@
                 <item>
                  <widget class="QLabel" name="urlProgressTitle">
                   <property name="text">
-                   <string>⚡ 网络下载与转码进度:</string>
+                   <string>⚡ 网络任务下载与转码进度:</string>
                   </property>
                  </widget>
                 </item>
@@ -933,7 +1054,7 @@
                    <cursorShape>PointingHandCursor</cursorShape>
                   </property>
                   <property name="text">
-                   <string>🚀 开始解析并提取网络音频</string>
+                   <string>🚀 开始解析并下载高清视频 (MP4)</string>
                   </property>
                  </widget>
                 </item>
@@ -971,7 +1092,7 @@
                    <cursorShape>PointingHandCursor</cursorShape>
                   </property>
                   <property name="text">
-                   <string>🎵 播放提取音频</string>
+                   <string>🎬 播放下载媒体</string>
                   </property>
                  </widget>
                 </item>
