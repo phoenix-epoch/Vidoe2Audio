@@ -4,7 +4,8 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QRegularExpression>
-#include <QDebug>
+#include <QMap>
+#include <cmath>
 
 FFmpegHelper::FFmpegHelper(QObject *parent)
     : QObject(parent),
@@ -41,8 +42,92 @@ QString FFmpegHelper::getAudioExtensionForFormat(const QString &format) {
 
 QString FFmpegHelper::getFilterStringForVideoFiles() {
     QStringList exts = supportedVideoExtensions();
-    QString filter = QString("常用音视频文件 (%1);;所有文件 (*.*)").arg(exts.join(" "));
-    return filter;
+    return QString("常见音视频文件 (%1);;所有文件 (*.*)").arg(exts.join(" "));
+}
+
+ExtensionDiagnosis FFmpegHelper::diagnoseExtension(const QString &rawInput) {
+    QString ext = rawInput.trimmed();
+    if (ext.startsWith(".")) {
+        ext = ext.mid(1);
+    }
+    ext = ext.toLower();
+
+    static const QMap<QString, ExtensionDiagnosis> knowledge = {
+        {"mp4",  {true, true, "MP4 (MPEG-4 Part 14)", "主流通用容器", "极速无损 / MP3 / AAC", "通用性最强，音视频兼容性极佳"}},
+        {"mkv",  {true, true, "MKV (Matroska)", "开源高清复合容器", "极速无损 / FLAC / MP3", "支持多音轨/内嵌字幕，无损抽取秒出"}},
+        {"mov",  {true, true, "MOV (QuickTime)", "苹果高清容器", "极速无损 (M4A) / MP3", "高质量原生音频流，推荐直接抽取"}},
+        {"avi",  {true, false, "AVI (Audio Video Interleaved)", "经典音视频交错", "转码为 MP3 / WAV", "老旧容器建议转码为标准 MP3 以防兼容问题"}},
+        {"flv",  {true, true, "FLV (Flash Video)", "流媒体视频格式", "转码为 MP3 / AAC", "常见直播与流媒体录制，可完美提取音频"}},
+        {"wmv",  {true, false, "WMV (Windows Media Video)", "微软流媒体格式", "转码为 MP3 / WMA", "内置 WMA 音频流，推荐转码为通用 MP3"}},
+        {"webm", {true, true, "WebM", "Google 开源网页流容器", "极速无损 (Opus/M4A) / MP3", "HTML5 网页视频主流格式，音质纯净"}},
+        {"ts",   {true, true, "TS (Transport Stream)", "广播传输流 / HLS", "转码为 MP3 / AAC", "网络分段视频流录像，完美支持音频聚合抽取"}},
+        {"m2ts", {true, true, "M2TS (BDAV)", "蓝光高清音视频流", "无损 FLAC / WAV", "常见于蓝光盘与高清摄像机，原生无损音质"}},
+        {"mts",  {true, true, "MTS (AVCHD)", "索尼/松下高清摄像", "转码为 MP3 / AAC", "摄像机原生素材，支持高清音轨无缝提取"}},
+        {"m4v",  {true, true, "M4V", "苹果 iTunes 格式", "极速无损 (M4A) / MP3", "类似 MP4，内嵌 AAC 高品质音频"}},
+        {"3gp",  {true, false, "3GP", "第三代移动端格式", "转码为 MP3", "老式手机录音视频，建议转码提升兼容性"}},
+        {"rmvb", {true, false, "RMVB (RealMedia)", "经典动态压缩流", "转码为 MP3 / AAC", "早年经典影视资源，全兼容转码为 MP3"}},
+        {"rm",   {true, false, "RM (RealMedia)", "RealNetworks 格式", "转码为 MP3", "经典音频编码，建议统一转码为 MP3"}},
+        {"vob",  {true, false, "VOB (DVD Video Object)", "DVD 原盘媒体流", "转码为 MP3 / AC3", "DVD 光盘内嵌音频，支持直接提取"}},
+        {"mpg",  {true, false, "MPEG-1/MPEG-2", "经典运动图像标准", "转码为 MP3", "老式 VCD/SVCD 音频抽取完全支持"}},
+        {"mpeg", {true, false, "MPEG-1/MPEG-2", "经典运动图像标准", "转码为 MP3", "老式影视音视频流支持"}},
+        {"ogv",  {true, true, "OGV (Ogg Video)", "Xiph 开源多媒体", "极速无损 (OGG) / MP3", "内嵌 Vorbis 音频，推荐直接抽取或转码"}},
+        {"f4v",  {true, true, "F4V (Flash MP4)", "高清 Flash 视频", "极速无损 / MP3", "主流网络流录像格式支持"}},
+        {"asf",  {true, false, "ASF (Advanced Systems)", "高级流媒体格式", "转码为 MP3 / WMA", "微软流媒体封装格式支持"}},
+        {"divx", {true, false, "DivX", "高压缩视频流", "转码为 MP3", "支持该容器内音频提取"}}
+    };
+
+    if (knowledge.contains(ext)) {
+        return knowledge[ext];
+    }
+
+    static const QStringList videoList = {
+        "dav", "mxf", "bik", "nut", "amv", "roq", "drc", "gifv", "y4m"
+    };
+
+    if (videoList.contains(ext)) {
+        return ExtensionDiagnosis{
+            true, false, QString("%1 格式").arg(ext.toUpper()),
+            "冷门/专用流媒体封装",
+            "建议重编码为 MP3 / WAV",
+            "FFmpeg 底层解复用器原生支持此封装，可直接抽取音频！"
+        };
+    }
+
+    return ExtensionDiagnosis{
+        false, false, "未知或非视频格式", "未知", "暂不支持",
+        "未识别为此类视频后缀，如确为多媒体文件，可直接载入让 FFmpeg 尝试探测"
+    };
+}
+
+double FFmpegHelper::estimateAudioSizeMB(double durationSec, const QString &format, const QString &bitrate) {
+    if (durationSec <= 0.0) return 0.0;
+
+    QString fmt = format.toLower();
+    if (fmt == "wav") {
+        return (durationSec * 44100.0 * 2.0 * 2.0) / (1024.0 * 1024.0);
+    }
+
+    if (fmt == "flac" || fmt == "alac") {
+        double wavSize = (durationSec * 44100.0 * 2.0 * 2.0) / (1024.0 * 1024.0);
+        return wavSize * 0.58;
+    }
+
+    double kbps = 192.0;
+    if (bitrate.contains("320k")) kbps = 320.0;
+    else if (bitrate.contains("256k")) kbps = 256.0;
+    else if (bitrate.contains("192k")) kbps = 192.0;
+    else if (bitrate.contains("128k")) kbps = 128.0;
+    else if (bitrate.contains("64k")) kbps = 64.0;
+
+    return (durationSec * (kbps * 1000.0 / 8.0)) / (1024.0 * 1024.0);
+}
+
+QString FFmpegHelper::formatSizeString(double sizeMB) {
+    if (sizeMB <= 0.0) return "载入视频后自动推算";
+    if (sizeMB < 1.0) {
+        return QString("约 %1 KB").arg(static_cast<int>(sizeMB * 1024.0));
+    }
+    return QString("约 %1 MB").arg(sizeMB, 0, 'f', 1);
 }
 
 QString FFmpegHelper::findFFmpegBinary(const QString &customPath) {
@@ -53,17 +138,31 @@ QString FFmpegHelper::findFFmpegBinary(const QString &customPath) {
         }
     }
 
-    // 1. 检查应用程序所在目录
     QString appDir = QCoreApplication::applicationDirPath();
-    QString localExe = QDir(appDir).filePath("ffmpeg.exe");
-    if (QFileInfo::exists(localExe)) {
-        return localExe;
+    QDir dir(appDir);
+
+    // 1. 沿当前运行目录向上逐级追溯查找 tools/ffmpeg.exe 或 ffmpeg.exe (覆盖各种 IDE 嵌套输出目录)
+    for (int i = 0; i <= 6; ++i) {
+        QString checkTools = dir.filePath("tools/ffmpeg.exe");
+        if (QFileInfo::exists(checkTools)) return QFileInfo(checkTools).absoluteFilePath();
+
+        QString checkLocal = dir.filePath("ffmpeg.exe");
+        if (QFileInfo::exists(checkLocal)) return QFileInfo(checkLocal).absoluteFilePath();
+
+        if (!dir.cdUp()) break;
     }
 
-    // 2. 检查程序同级或上一级 tools 目录
-    QString toolsExe = QDir(appDir).filePath("tools/ffmpeg.exe");
-    if (QFileInfo::exists(toolsExe)) {
-        return toolsExe;
+    // 2. 检查预置工作区与发布包固定路径
+    static const QStringList fallbackPaths = {
+        "E:/AiToy/video/tools/ffmpeg.exe",
+        "E:/AiToy/video/Release_Package/StarryAudioExtractor/tools/ffmpeg.exe",
+        "E:/AiToy/video/build_release/tools/ffmpeg.exe",
+        "E:/AiToy/video/ffmpeg.exe",
+        "C:/Program Files/ffmpeg/bin/ffmpeg.exe",
+        "C:/Program Files (x86)/ffmpeg/bin/ffmpeg.exe"
+    };
+    for (const QString &p : fallbackPaths) {
+        if (QFileInfo::exists(p)) return p;
     }
 
     // 3. 检查系统环境变量 PATH
@@ -80,27 +179,39 @@ bool FFmpegHelper::checkFFmpegExecutable(const QString &ffmpegPath, QString *ver
 
     QProcess proc;
     proc.start(ffmpegPath, QStringList() << "-version");
-    if (!proc.waitForStarted(2000)) {
-        return false;
-    }
-
+    if (!proc.waitForStarted(2000)) return false;
     if (!proc.waitForFinished(3000)) {
         proc.kill();
         return false;
     }
 
     if (proc.exitCode() == 0) {
-        QString output = QString::fromUtf8(proc.readAllStandardOutput());
-        if (output.isEmpty()) {
-            output = QString::fromUtf8(proc.readAllStandardError());
-        }
         if (versionOut) {
-            QString firstLine = output.split('\n').value(0).trimmed();
-            *versionOut = firstLine;
+            QString output = QString::fromUtf8(proc.readAllStandardOutput());
+            if (output.isEmpty()) output = QString::fromUtf8(proc.readAllStandardError());
+            *versionOut = output.split('\n').value(0).trimmed();
         }
         return true;
     }
     return false;
+}
+
+double FFmpegHelper::probeDurationSeconds(const QString &ffmpegPath, const QString &videoPath) {
+    QString exec = findFFmpegBinary(ffmpegPath);
+    if (exec.isEmpty() || !QFileInfo::exists(videoPath)) return 0.0;
+
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(exec, QStringList() << "-hide_banner" << "-i" << videoPath);
+    proc.waitForFinished(2500);
+
+    QString output = QString::fromUtf8(proc.readAll());
+    static QRegularExpression durRegex(R"(Duration:\s*(\d{2}:\d{2}:\d{2}(?:\.\d+)?))");
+    QRegularExpressionMatch match = durRegex.match(output);
+    if (match.hasMatch()) {
+        return parseTimeToSeconds(match.captured(1));
+    }
+    return 0.0;
 }
 
 QString FFmpegHelper::selectAudioCodec(const QString &format) {
@@ -121,7 +232,7 @@ QString FFmpegHelper::selectAudioCodec(const QString &format) {
 
 void FFmpegHelper::startExtraction(const QString &ffmpegPath, const ExtractionOptions &options) {
     if (isRunning()) {
-        emit logMessage("⚠️ 任务正在运行中，请等待或先取消当前任务", "WARNING");
+        emit logMessage("⚠️ 任务正在运行中，请等待完成或取消当前任务", "WARNING");
         return;
     }
 
@@ -133,70 +244,58 @@ void FFmpegHelper::startExtraction(const QString &ffmpegPath, const ExtractionOp
 
     QString exec = findFFmpegBinary(ffmpegPath);
     if (exec.isEmpty()) {
-        emit logMessage("❌ 未找到 FFmpeg 可执行文件，请在界面设置正确的 ffmpeg.exe 路径！", "ERROR");
-        emit extractionFinished(false, "", "未找到 FFmpeg 可执行文件");
+        emit logMessage("❌ 未找到 FFmpeg 执行引擎 (tools/ffmpeg.exe)！", "ERROR");
+        emit logMessage("💡 提示：请将 ffmpeg.exe 放置于 tools 目录下，即可开箱即用", "WARNING");
+        emit extractionFinished(false, "", "未找到 FFmpeg");
         return;
     }
 
     QFileInfo inputFi(options.inputFilePath);
     if (!inputFi.exists()) {
-        emit logMessage(QString("❌ 输入文件不存在: %1").arg(options.inputFilePath), "ERROR");
-        emit extractionFinished(false, "", "输入文件不存在");
+        emit logMessage(QString("❌ 输入视频文件不存在: %1").arg(options.inputFilePath), "ERROR");
+        emit extractionFinished(false, "", "文件不存在");
         return;
     }
 
-    // 构建 FFmpeg 参数列表
+    QFileInfo outFi(options.outputFilePath);
+    QDir().mkpath(outFi.absolutePath());
+
     QStringList args;
     args << "-hide_banner";
-    if (options.overwriteOutput) {
-        args << "-y";
-    } else {
-        args << "-n";
-    }
+    if (options.overwriteOutput) args << "-y";
+    else args << "-n";
 
     args << "-i" << options.inputFilePath;
-    args << "-vn"; // 禁用视频轨
+    args << "-vn";
 
     if (options.mode == ExtractMode::DirectCopy) {
-        // 极速流拷贝模式
         args << "-c:a" << "copy";
         emit logMessage("⚡ 启用极速无损流提取模式 (-c:a copy)", "INFO");
     } else {
-        // 格式转码模式
         QString codec = selectAudioCodec(options.targetFormat);
-        if (!codec.isEmpty()) {
-            args << "-c:a" << codec;
-        }
+        if (!codec.isEmpty()) args << "-c:a" << codec;
 
-        // 码率设置
         if (options.bitrate != "Auto" && !options.bitrate.isEmpty()) {
             args << "-b:a" << options.bitrate;
         }
-
-        // 采样率设置
         if (options.sampleRate != "Auto" && !options.sampleRate.isEmpty()) {
             args << "-ar" << options.sampleRate;
         }
+        if (options.channels == "2") args << "-ac" << "2";
+        else if (options.channels == "1") args << "-ac" << "1";
 
-        // 声道数设置
-        if (options.channels == "2") {
-            args << "-ac" << "2";
-        } else if (options.channels == "1") {
-            args << "-ac" << "1";
-        }
-
-        emit logMessage(QString("🎛️ 启用转码提取模式: 目标格式=[%1], 编码器=[%2], 码率=[%3]")
+        emit logMessage(QString("🎛️ 启用转码提取模式: 目标格式=[%1], 码率=[%2]")
                             .arg(options.targetFormat.toUpper())
-                            .arg(codec.isEmpty() ? "默认" : codec)
                             .arg(options.bitrate), "INFO");
     }
 
     args << options.outputFilePath;
 
-    emit logMessage(QString("🚀 执行指令: %1 %2").arg(exec, args.join(" ")), "INFO");
+    emit logMessage(QString("🚀 已自动启动 FFmpeg 核心抽取引擎 (%1)").arg(QFileInfo(exec).fileName()), "INFO");
     emit started();
     emit progressUpdated(0, 0, 0);
 
+    // 动态启动进程：开始提取时自动启动引擎
     m_process = new QProcess(this);
     m_process->setProcessChannelMode(QProcess::MergedChannels);
 
@@ -210,9 +309,10 @@ void FFmpegHelper::startExtraction(const QString &ffmpegPath, const ExtractionOp
 
 void FFmpegHelper::cancelExtraction() {
     if (m_process && m_process->state() != QProcess::NotRunning) {
-        emit logMessage("⏹️ 用户中断了提取任务...", "WARNING");
+        emit logMessage("⏹️ 用户中断任务，正在自动关闭 FFmpeg 引擎...", "WARNING");
         m_process->kill();
         m_process->waitForFinished(1000);
+        emit logMessage("⏹️ FFmpeg 引擎已安全关闭并退出。", "INFO");
     }
 }
 
@@ -224,13 +324,11 @@ void FFmpegHelper::onProcessReadyRead() {
     if (!m_process) return;
 
     QByteArray data = m_process->readAll();
-    QString chunk = QString::fromUtf8(data);
-    m_outputBuffer += chunk;
+    m_outputBuffer += QString::fromUtf8(data);
 
-    // 按行拆分解析
     QStringList lines = m_outputBuffer.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     if (!m_outputBuffer.endsWith('\r') && !m_outputBuffer.endsWith('\n') && !lines.isEmpty()) {
-        m_outputBuffer = lines.takeLast(); // 保留不完整的末行
+        m_outputBuffer = lines.takeLast();
     } else {
         m_outputBuffer.clear();
     }
@@ -244,7 +342,6 @@ void FFmpegHelper::parseFFmpegOutput(const QString &line) {
     QString trimmed = line.trimmed();
     if (trimmed.isEmpty()) return;
 
-    // 1. 解析视频总时长: Duration: 00:01:23.45, start: ...
     if (!m_durationParsed && trimmed.contains("Duration:")) {
         static QRegularExpression durRegex(R"(Duration:\s*(\d{2}:\d{2}:\d{2}(?:\.\d+)?))");
         QRegularExpressionMatch match = durRegex.match(trimmed);
@@ -252,28 +349,20 @@ void FFmpegHelper::parseFFmpegOutput(const QString &line) {
             QString timeStr = match.captured(1);
             m_totalDurationSec = parseTimeToSeconds(timeStr);
             m_durationParsed = true;
-            emit logMessage(QString("⏱️ 检测到视频时长: %1 (%2 秒)").arg(timeStr).arg(m_totalDurationSec, 0, 'f', 1), "INFO");
+            emit logMessage(QString("⏱️ 检测到视频时长: %1").arg(timeStr), "INFO");
         }
     }
 
-    // 2. 解析实时提取进度: time=00:00:15.36
     if (trimmed.contains("time=")) {
         static QRegularExpression timeRegex(R"(time=\s*(\d{2}:\d{2}:\d{2}(?:\.\d+)?))");
         QRegularExpressionMatch match = timeRegex.match(trimmed);
         if (match.hasMatch()) {
-            QString timeStr = match.captured(1);
-            m_currentSec = parseTimeToSeconds(timeStr);
-
+            m_currentSec = parseTimeToSeconds(match.captured(1));
             int percent = 0;
             if (m_totalDurationSec > 0.0) {
                 percent = qBound(0, static_cast<int>((m_currentSec / m_totalDurationSec) * 100.0), 99);
             }
             emit progressUpdated(percent, m_currentSec, m_totalDurationSec);
-        }
-    } else {
-        // 输出普通的 ffmpeg 信息
-        if (trimmed.startsWith("Stream #") || trimmed.startsWith("Input #") || trimmed.startsWith("Output #")) {
-            emit logMessage(trimmed, "FFMPEG");
         }
     }
 }
@@ -281,10 +370,7 @@ void FFmpegHelper::parseFFmpegOutput(const QString &line) {
 double FFmpegHelper::parseTimeToSeconds(const QString &timeStr) {
     QStringList parts = timeStr.split(':');
     if (parts.size() == 3) {
-        double hours = parts[0].toDouble();
-        double mins = parts[1].toDouble();
-        double secs = parts[2].toDouble();
-        return hours * 3600.0 + mins * 60.0 + secs;
+        return parts[0].toDouble() * 3600.0 + parts[1].toDouble() * 60.0 + parts[2].toDouble();
     }
     return 0.0;
 }
@@ -294,14 +380,17 @@ void FFmpegHelper::onProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
     if (success) {
         emit progressUpdated(100, m_totalDurationSec, m_totalDurationSec);
-        emit logMessage(QString("🎉 音频提取成功！文件已保存至: %1").arg(m_currentOptions.outputFilePath), "SUCCESS");
+        emit logMessage(QString("🎉 音频提取成功！已保存至桌面: %1").arg(m_currentOptions.outputFilePath), "SUCCESS");
+        emit logMessage("⏹️ FFmpeg 提取引擎任务完成，已自动退出关闭。", "INFO");
         emit extractionFinished(true, m_currentOptions.outputFilePath, "");
     } else {
-        QString errMsg = QString("提取失败 (退出码: %1)").arg(exitCode);
+        QString errMsg = QString("提取失败 (代码: %1)").arg(exitCode);
         emit logMessage(QString("❌ %1").arg(errMsg), "ERROR");
+        emit logMessage("⏹️ FFmpeg 提取引擎已自动关闭。", "INFO");
         emit extractionFinished(false, m_currentOptions.outputFilePath, errMsg);
     }
 
+    // 自动清理关闭进程
     if (m_process) {
         m_process->deleteLater();
         m_process = nullptr;
@@ -310,7 +399,7 @@ void FFmpegHelper::onProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
 void FFmpegHelper::onProcessError(QProcess::ProcessError error) {
     if (error == QProcess::FailedToStart) {
-        emit logMessage("❌ 启动 FFmpeg 进程失败，请检查路径或执行权限！", "ERROR");
+        emit logMessage("❌ 启动 FFmpeg 失败，请检查 tools/ffmpeg.exe 是否存在！", "ERROR");
         emit extractionFinished(false, "", "FFmpeg 启动失败");
     }
 }

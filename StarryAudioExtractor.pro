@@ -4,32 +4,32 @@
 
 QT       += core gui widgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
 CONFIG += c++17
 
 TARGET = StarryAudioExtractor
 TEMPLATE = app
 
-# The following define makes your compiler emit warnings if you use
-# any Qt feature that has been marked deprecated.
 DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/src
+
+MOC_DIR = moc
+OBJECTS_DIR = obj
+UI_DIR = uic
 
 SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/starrybackground.cpp \
-    src/ffmpeghelper.cpp
+    src/ffmpeghelper.cpp \
+    src/urlextractorhelper.cpp
 
 HEADERS += \
     src/mainwindow.h \
     src/starrybackground.h \
     src/ffmpeghelper.h \
+    src/urlextractorhelper.h \
     src/style.h
 
-# Windows 配置
-win32 {
-    RC_ICONS = 
-}
+FORMS += \
+    src/mainwindow.ui

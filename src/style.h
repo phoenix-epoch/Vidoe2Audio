@@ -5,7 +5,6 @@
 
 namespace StarryStyle {
 
-// 整体星空科技感 QSS 样式表 (响应式与高 DPI 自适应优化)
 inline QString getApplicationStyle() {
     return QString(R"(
         /* 全局字体与基础设定 */
@@ -60,20 +59,67 @@ inline QString getApplicationStyle() {
         }
         
         QLabel#headerTitle {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             color: #00f0ff;
             letter-spacing: 1px;
         }
 
         QLabel#headerSubtitle {
-            font-size: 11px;
+            font-size: 12px;
             color: #7b9cc4;
         }
 
-        QLabel#sectionLabel {
+        QLabel#portalTitle {
+            font-size: 28px;
             font-weight: bold;
-            color: #5eead4;
+            color: #00f0ff;
+            letter-spacing: 2px;
+        }
+
+        QLabel#portalSubtitle {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* 首页双模式大卡片按钮 */
+        QPushButton#modeCardLocal, QPushButton#modeCardUrl {
+            background: rgba(12, 22, 45, 0.85);
+            border: 2px solid rgba(0, 240, 255, 0.35);
+            border-radius: 16px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        QPushButton#modeCardLocal:hover, QPushButton#modeCardUrl:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border: 2px solid #00f0ff;
+            color: #ffffff;
+        }
+
+        QPushButton#modeCardLocal:pressed, QPushButton#modeCardUrl:pressed {
+            background: rgba(0, 240, 255, 0.28);
+            border: 2px solid #38ef7d;
+        }
+
+        /* 返回导航按钮 */
+        QPushButton#backToPortalBtn {
+            background-color: rgba(14, 26, 50, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.45);
+            border-radius: 6px;
+            color: #00f0ff;
+            padding: 6px 14px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        QPushButton#backToPortalBtn:hover {
+            background-color: rgba(0, 240, 255, 0.25);
+            border: 1px solid #00f0ff;
+            color: #ffffff;
         }
 
         /* 输入框 */
@@ -85,7 +131,7 @@ inline QString getApplicationStyle() {
             color: #ffffff;
             selection-background-color: #00f0ff;
             selection-color: #090e1c;
-            min-height: 20px;
+            min-height: 22px;
         }
 
         QLineEdit:hover {
@@ -111,7 +157,7 @@ inline QString getApplicationStyle() {
             border-radius: 6px;
             padding: 4px 10px;
             color: #ffffff;
-            min-height: 20px;
+            min-height: 22px;
         }
 
         QComboBox:hover {
@@ -161,7 +207,7 @@ inline QString getApplicationStyle() {
             color: #d1f2ff;
             padding: 5px 12px;
             font-weight: 500;
-            min-height: 20px;
+            min-height: 22px;
         }
 
         QPushButton:hover {
@@ -181,7 +227,7 @@ inline QString getApplicationStyle() {
             color: #556980;
         }
 
-        /* 特殊高亮按钮：发射/开始按钮 */
+        /* 开始执行大按钮 */
         QPushButton#primaryActionBtn {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0052d4, stop:0.5 #4364f7, stop:1 #6fb1fc);
             border: 1px solid #00f0ff;
@@ -191,7 +237,7 @@ inline QString getApplicationStyle() {
             font-weight: bold;
             padding: 8px 20px;
             letter-spacing: 1px;
-            min-height: 24px;
+            min-height: 26px;
         }
 
         QPushButton#primaryActionBtn:hover {
@@ -204,13 +250,6 @@ inline QString getApplicationStyle() {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #003bb3, stop:1 #2f4fc9);
         }
 
-        QPushButton#primaryActionBtn:disabled {
-            background: rgba(30, 45, 75, 0.6);
-            border: 1px solid rgba(100, 130, 160, 0.3);
-            color: #718096;
-        }
-
-        /* 终止/取消按钮 */
         QPushButton#cancelActionBtn {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #8b0032, stop:1 #e52d27);
             border: 1px solid #ff4b72;
@@ -219,7 +258,7 @@ inline QString getApplicationStyle() {
             font-size: 14px;
             font-weight: bold;
             padding: 8px 18px;
-            min-height: 24px;
+            min-height: 26px;
         }
 
         QPushButton#cancelActionBtn:hover {
@@ -302,20 +341,6 @@ inline QString getApplicationStyle() {
             height: 0px;
         }
 
-        QScrollBar:horizontal {
-            background: rgba(10, 16, 32, 0.6);
-            height: 7px;
-            margin: 0px;
-            border-radius: 3px;
-        }
-
-        QScrollBar::handle:horizontal {
-            background: rgba(0, 240, 255, 0.35);
-            min-width: 20px;
-            border-radius: 3px;
-        }
-
-        /* 悬停提示框 */
         QToolTip {
             background-color: #0f172a;
             color: #00f0ff;

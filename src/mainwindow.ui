@@ -1,0 +1,1056 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>920</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>680</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>🌌 星空音频分离系统 - Starry Audio Extractor (FFmpeg Powered)</string>
+  </property>
+  <widget class="StarryBackground" name="centralWidget">
+   <layout class="QVBoxLayout" name="bgLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+
+      <!-- ================= 页面 0: 模式选择导航大厅 ================= -->
+      <widget class="QWidget" name="portalPage">
+       <layout class="QVBoxLayout" name="portalLayout">
+        <property name="spacing">
+         <number>24</number>
+        </property>
+        <property name="leftMargin">
+         <number>40</number>
+        </property>
+        <property name="topMargin">
+         <number>60</number>
+        </property>
+        <property name="rightMargin">
+         <number>40</number>
+        </property>
+        <property name="bottomMargin">
+         <number>60</number>
+        </property>
+        <item>
+         <spacer name="portalTopSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="portalTitle">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="text">
+           <string>🌌 STARRY AUDIO EXTRACTOR</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="portalSubtitle">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="text">
+           <string>✦ 全能星空音视频音频提取与转码中心 · 请选择工作模式 ✦</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="portalMidSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>30</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="portalCardLayout">
+          <property name="spacing">
+           <number>30</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="modeCardLocal">
+            <property name="minimumSize">
+             <size>
+              <width>280</width>
+              <height>180</height>
+             </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="text">
+             <string>📁 本地视频提取模式
+
+• 支持 MP4/MKV/MOV/RMVB 等 20+ 格式
+• 极速无损流拷贝与高精转码
+• 支持输入后缀名智能诊断校验</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="modeCardUrl">
+            <property name="minimumSize">
+             <size>
+              <width>280</width>
+              <height>180</height>
+             </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="text">
+             <string>🌐 网络网址提取模式
+
+• 支持 B站 / 抖音 / YouTube 等网页视频
+• 支持 m3u8 / mp4 网络流媒体直链
+• 粘贴链接一键极速下载并转码为音频</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="portalBottomSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="portalFootnote">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: #64748b; font-size: 11px;</string>
+          </property>
+          <property name="text">
+           <string>💡 核心引擎全内置免配置 · 提取产物默认保存至【电脑桌面】即刻可见</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+
+      <!-- ================= 页面 1: 本地提取工作台 ================= -->
+      <widget class="QWidget" name="localPage">
+       <layout class="QVBoxLayout" name="localMainLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="localScrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="localContentContainer">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>900</width>
+             <height>700</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="localLayout">
+            <property name="spacing">
+             <number>12</number>
+            </property>
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>20</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <!-- 顶部导航栏 -->
+            <item>
+             <layout class="QHBoxLayout" name="localNavRow">
+              <item>
+               <widget class="QPushButton" name="backFromLocalBtn">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>⬅️ 返回模式选择</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="localHeaderTitle">
+                <property name="text">
+                 <string>📁 本地音视频分离工作台</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">font-size: 16px; font-weight: bold; color: #00f0ff;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="localNavSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="showFormatsBtn">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>ℹ️ 支持格式清单</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <!-- 区域 1: 视频输入与后缀校验 -->
+            <item>
+             <widget class="QGroupBox" name="inputGroup">
+              <property name="title">
+               <string>📁 输入源视频或后缀 (Source Video / Extension)</string>
+              </property>
+              <layout class="QVBoxLayout" name="inputGroupLayout">
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="inputRow">
+                 <property name="spacing">
+                  <number>8</number>
+                 </property>
+                 <item>
+                  <widget class="QLineEdit" name="inputVideoEdit">
+                   <property name="placeholderText">
+                    <string>选择/拖拽视频，或直接输入后缀名 (如 mkv, rmvb, mp4) 进行支持度诊断...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="browseInputBtn">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>📂 浏览视频...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="fileInfoLabel">
+                 <property name="styleSheet">
+                  <string notr="true">color: #64748b; font-size: 11px;</string>
+                 </property>
+                 <property name="text">
+                  <string>文件状态: 未载入视频 (可输入后缀如 mkv 回车诊断)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <!-- 区域 2: 分离提取参数与大小预估 -->
+            <item>
+             <widget class="QGroupBox" name="settingsGroup">
+              <property name="title">
+               <string>⚙️ 分离提取参数 (Extraction Settings)</string>
+              </property>
+              <layout class="QVBoxLayout" name="settingsGroupLayout">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="modeRow">
+                 <item>
+                  <widget class="QRadioButton" name="radioTranscode">
+                   <property name="text">
+                    <string>🎛️ 格式重编码转换 (自定义格式、码率与采样率)</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioDirectCopy">
+                   <property name="text">
+                    <string>⚡ 极速无损流拷贝 (-c:a copy 毫秒级提取原音轨)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="modeSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="paramGrid">
+                 <property name="horizontalSpacing">
+                  <number>14</number>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>6</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="formatLbl">
+                   <property name="text">
+                    <string>目标音频格式:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="formatCombo"/>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="bitrateLbl">
+                   <property name="text">
+                    <string>音频比特率:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QComboBox" name="bitrateCombo"/>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="sampleRateLbl">
+                   <property name="text">
+                    <string>音频采样率:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="sampleRateCombo"/>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="channelLbl">
+                   <property name="text">
+                    <string>声道配置:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QComboBox" name="channelCombo"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="estimateRow">
+                 <item>
+                  <widget class="QCheckBox" name="overwriteCheck">
+                   <property name="text">
+                    <string>如果目标文件已存在则直接覆盖 (Overwrite)</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="estimateSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="estimatedSizeLabel">
+                   <property name="styleSheet">
+                    <string notr="true">color: #5eead4; font-weight: bold; font-size: 12px;</string>
+                   </property>
+                   <property name="text">
+                    <string>💾 预估音频大小: 载入视频后自动推算</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <!-- 区域 3: 音频保存设置 (已隐去 FFmpeg 路径) -->
+            <item>
+             <widget class="QGroupBox" name="pathGroup">
+              <property name="title">
+               <string>💾 音频保存设置 (Output Settings)</string>
+              </property>
+              <layout class="QHBoxLayout" name="pathGroupLayout">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="outputLbl">
+                 <property name="text">
+                  <string>音频输出路径:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="outputPathEdit">
+                 <property name="placeholderText">
+                  <string>默认自动保存到桌面...</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="browseOutputBtn">
+                 <property name="cursor">
+                  <cursorShape>PointingHandCursor</cursorShape>
+                 </property>
+                 <property name="text">
+                  <string>📂 更改保存位置...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <!-- 进度与操作 -->
+            <item>
+             <layout class="QVBoxLayout" name="localActionSection">
+              <property name="spacing">
+               <number>6</number>
+              </property>
+              <item>
+               <layout class="QHBoxLayout" name="localProgressInfoRow">
+                <item>
+                 <widget class="QLabel" name="progressTitle">
+                  <property name="text">
+                   <string>⚡ 处理进度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="progressDetailLabel">
+                  <property name="styleSheet">
+                   <string notr="true">color: #00f0ff; font-weight: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>就绪 (0%) - 00:00 / 00:00</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="localProgressSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QProgressBar" name="progressBar">
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="localActionBtnRow">
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="startBtn">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>3</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>🚀 开始分离提取音频</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="openFolderBtn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>2</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>📁 打开桌面/目录</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="playAudioBtn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>2</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>🎵 播放提取音频</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <!-- 控制台日志 -->
+            <item>
+             <widget class="QGroupBox" name="logGroup">
+              <property name="title">
+               <string>📟 本地任务控制台日志 (Terminal Logs)</string>
+              </property>
+              <layout class="QVBoxLayout" name="logLayout">
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <item>
+                <widget class="QTextEdit" name="consoleLog">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>90</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="logBottomRow">
+                 <item>
+                  <spacer name="logSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="clearLogBtn">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>🗑️ 清空控制台</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+
+      <!-- ================= 页面 2: 网络网址提取工作台 ================= -->
+      <widget class="QWidget" name="urlPage">
+       <layout class="QVBoxLayout" name="urlMainLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="urlScrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="urlContentContainer">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>900</width>
+             <height>700</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="urlLayout">
+            <property name="spacing">
+             <number>12</number>
+            </property>
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <property name="topMargin">
+             <number>16</number>
+            </property>
+            <property name="rightMargin">
+             <number>20</number>
+            </property>
+            <property name="bottomMargin">
+             <number>16</number>
+            </property>
+            <!-- 顶部导航 -->
+            <item>
+             <layout class="QHBoxLayout" name="urlNavRow">
+              <item>
+               <widget class="QPushButton" name="backFromUrlBtn">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>⬅️ 返回模式选择</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="urlHeaderTitle">
+                <property name="text">
+                 <string>🌐 网络网址音视频提取工作台</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">font-size: 16px; font-weight: bold; color: #00f0ff;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="urlNavSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="urlEngineBadge">
+                <property name="styleSheet">
+                 <string notr="true">color: #00ff88; font-weight: bold; font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>● yt-dlp + FFmpeg 引擎已就绪</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <!-- 网址输入组 -->
+            <item>
+             <widget class="QGroupBox" name="urlInputGroup">
+              <property name="title">
+               <string>🌐 视频网址输入 (Video URL)</string>
+              </property>
+              <layout class="QVBoxLayout" name="urlInputGroupLayout">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="urlInputRow">
+                 <property name="spacing">
+                  <number>8</number>
+                 </property>
+                 <item>
+                  <widget class="QLineEdit" name="urlEdit">
+                   <property name="placeholderText">
+                    <string>请在此粘贴视频网址 (支持 B站, 抖音, YouTube, 微博, Twitter, m3u8 等)...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pasteUrlBtn">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>📋 粘贴网址</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="singleVideoCheck">
+                 <property name="text">
+                  <string>仅提取当前单视频音频 (如果是合集/播放列表则忽略后续剧集)</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <!-- 网络提取参数与保存路径 -->
+            <item>
+             <widget class="QGroupBox" name="urlSettingsGroup">
+              <property name="title">
+               <string>⚙️ 目标音频配置与保存路径 (Audio Settings)</string>
+              </property>
+              <layout class="QGridLayout" name="urlSettingsGrid">
+               <property name="horizontalSpacing">
+                <number>12</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="urlFormatLbl">
+                 <property name="text">
+                  <string>目标音频格式:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="urlFormatCombo"/>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="urlQualityLbl">
+                 <property name="text">
+                  <string>音频输出音质:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QComboBox" name="urlQualityCombo"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="urlOutputLbl">
+                 <property name="text">
+                  <string>音频保存目录:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1" colspan="2">
+                <widget class="QLineEdit" name="urlOutputPathEdit">
+                 <property name="placeholderText">
+                  <string>默认保存至桌面...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QPushButton" name="browseUrlOutputBtn">
+                 <property name="cursor">
+                  <cursorShape>PointingHandCursor</cursorShape>
+                 </property>
+                 <property name="text">
+                  <string>📂 更改目录...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <!-- 进度与操作 -->
+            <item>
+             <layout class="QVBoxLayout" name="urlActionSection">
+              <property name="spacing">
+               <number>6</number>
+              </property>
+              <item>
+               <layout class="QHBoxLayout" name="urlProgressInfoRow">
+                <item>
+                 <widget class="QLabel" name="urlProgressTitle">
+                  <property name="text">
+                   <string>⚡ 网络下载与转码进度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="urlProgressDetailLabel">
+                  <property name="styleSheet">
+                   <string notr="true">color: #00f0ff; font-weight: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>就绪 (0%) - 速度: 0 KB/s - 剩余: --:--</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="urlProgressSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QProgressBar" name="urlProgressBar">
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="urlActionBtnRow">
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="startUrlBtn">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>3</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>🚀 开始解析并提取网络音频</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="openUrlFolderBtn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>2</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>📁 打开桌面/目录</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="playUrlAudioBtn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>2</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>🎵 播放提取音频</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <!-- 控制台日志 -->
+            <item>
+             <widget class="QGroupBox" name="urlLogGroup">
+              <property name="title">
+               <string>📟 网络任务控制台日志 (Terminal Logs)</string>
+              </property>
+              <layout class="QVBoxLayout" name="urlLogLayout">
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <item>
+                <widget class="QTextEdit" name="urlConsoleLog">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>90</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="urlLogBottomRow">
+                 <item>
+                  <spacer name="urlLogSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="clearUrlLogBtn">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
+                   <property name="text">
+                    <string>🗑️ 清空控制台</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>StarryBackground</class>
+   <extends>QWidget</extends>
+   <header>starrybackground.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

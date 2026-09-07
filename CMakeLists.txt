@@ -13,7 +13,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# 支持 Qt 6 或 Qt 5 自动寻找
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Core Gui)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Core Gui)
 
@@ -23,10 +22,13 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.h
     src/mainwindow.cpp
+    src/mainwindow.ui
     src/starrybackground.h
     src/starrybackground.cpp
     src/ffmpeghelper.h
     src/ffmpeghelper.cpp
+    src/urlextractorhelper.h
+    src/urlextractorhelper.cpp
     src/style.h
 )
 
@@ -38,7 +40,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
 )
 
-# Windows 下以 GUI 程序启动（避免额外的黑色终端弹出，由 QProcess 捕获输出）
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE

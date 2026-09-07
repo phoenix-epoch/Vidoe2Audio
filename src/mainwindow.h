@@ -2,98 +2,86 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QComboBox>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QProgressBar>
-#include <QTextEdit>
-#include <QLabel>
-#include <QScrollArea>
 #include <QElapsedTimer>
-#include "starrybackground.h"
 #include "ffmpeghelper.h"
+#include "urlextractorhelper.h"
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override = default;
+    ~MainWindow() override;
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 
 private slots:
+    // 导航槽函数
+    void onEnterLocalMode();
+    void onEnterUrlMode();
+    void onBackToPortal();
+
+    // 本地工作台槽函数
     void onBrowseInputVideo();
     void onBrowseOutputDir();
-    void onBrowseFFmpeg();
-    void onModeChanged();
-    void onFormatChanged(int index);
-    void onStartOrCancelClicked();
-    void onOpenOutputFolder();
-    void onPlayAudio();
-    void onClearLog();
+    void onShowFormatsDialog();
+    void onInputTextChanged(const QString &text);
+    void onLocalModeToggled();
+    void onLocalFormatOrBitrateChanged();
+    void onStartOrCancelLocalClicked();
+    void onOpenLocalOutputFolder();
+    void onPlayLocalAudio();
+    void onClearLocalLog();
 
-    // FFmpeg Helper 信号槽
-    void onFFmpegStarted();
-    void onFFmpegLog(const QString &message, const QString &type);
-    void onFFmpegProgress(int percentage, double currentSec, double totalDurationSec);
-    void onFFmpegFinished(bool success, const QString &outputFilePath, const QString &errorMsg);
+    // 本地 FFmpeg 信号
+    void onLocalFFmpegStarted();
+    void onLocalFFmpegLog(const QString &message, const QString &type);
+    void onLocalFFmpegProgress(int percentage, double currentSec, double totalDurationSec);
+    void onLocalFFmpegFinished(bool success, const QString &outputFilePath, const QString &errorMsg);
+
+    // 网络工作台槽函数
+    void onPasteUrl();
+    void onBrowseUrlOutputDir();
+    void onStartOrCancelUrlClicked();
+    void onOpenUrlOutputFolder();
+    void onPlayUrlAudio();
+    void onClearUrlLog();
+
+    // 网络 yt-dlp 信号
+    void onUrlYtDlpStarted();
+    void onUrlYtDlpLog(const QString &message, const QString &type);
+    void onUrlYtDlpProgress(int percentage, const QString &speedStr, const QString &etaStr);
+    void onUrlYtDlpFinished(bool success, const QString &outputFolder, const QString &lastExtractedFile, const QString &errorMsg);
 
 private:
-    void setupUi();
-    void checkAndDetectFFmpeg();
-    void updateDefaultOutputPath();
-    void setExtractionUiState(bool extracting);
-    void appendLog(const QString &message, const QString &type);
+    void setupUiCustom();
+    void updateDefaultLocalOutputPath();
+    void updateLocalEstimatedSize();
+    void setLocalExtractionUiState(bool extracting);
+    void setUrlExtractionUiState(bool extracting);
+    void appendLocalLog(const QString &message, const QString &type);
+    void appendUrlLog(const QString &message, const QString &type);
     QString formatSeconds(double totalSeconds);
+    QString getDesktopPath() const;
 
-    // 控件成员
-    StarryBackground *m_starryBg;
-    QScrollArea *m_scrollArea;
-    QWidget *m_contentContainer;
+    Ui::MainWindow *ui;
 
-    // 输入区
-    QLineEdit *m_inputVideoEdit;
-    QPushButton *m_browseInputBtn;
-    QLabel *m_fileInfoLabel;
-
-    // 提取配置区
-    QRadioButton *m_radioDirectCopy;
-    QRadioButton *m_radioTranscode;
-    QComboBox *m_formatCombo;
-    QComboBox *m_bitrateCombo;
-    QComboBox *m_sampleRateCombo;
-    QComboBox *m_channelCombo;
-    QCheckBox *m_overwriteCheck;
-
-    // 输出区
-    QLineEdit *m_outputPathEdit;
-    QPushButton *m_browseOutputBtn;
-
-    // FFmpeg 状态区
-    QLineEdit *m_ffmpegPathEdit;
-    QPushButton *m_browseFFmpegBtn;
-    QLabel *m_ffmpegStatusBadge;
-
-    // 控制与进度区
-    QPushButton *m_startBtn;
-    QPushButton *m_openFolderBtn;
-    QPushButton *m_playAudioBtn;
-    QProgressBar *m_progressBar;
-    QLabel *m_progressDetailLabel;
-
-    // 日志控制台
-    QTextEdit *m_consoleLog;
-    QPushButton *m_clearLogBtn;
-
-    // 状态管理
+    // 本地引擎
     FFmpegHelper *m_ffmpegHelper;
-    QElapsedTimer m_elapsedTimer;
-    QString m_lastGeneratedAudioPath;
+    QElapsedTimer m_localTimer;
+    QString m_lastLocalAudioPath;
+    double m_currentVideoDurationSec;
+
+    // 网络引擎
+    UrlExtractorHelper *m_urlHelper;
+    QElapsedTimer m_urlTimer;
+    QString m_lastUrlAudioPath;
 };
 
 #endif // MAINWINDOW_H

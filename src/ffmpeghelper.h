@@ -8,18 +8,28 @@
 
 enum class ExtractMode {
     DirectCopy,     // 极速无损流拷贝 (-c:a copy)
-    Transcode       // 格式转码定制
+    Transcode       // 格式重编码定制
 };
 
 struct ExtractionOptions {
     QString inputFilePath;
     QString outputFilePath;
     ExtractMode mode;
-    QString targetFormat;    // 如 "mp3", "aac", "wav", "flac" 等
+    QString targetFormat;    // 如 "MP3", "AAC", "WAV", "FLAC" 等
     QString bitrate;         // 如 "320k", "256k", "192k", "128k", "Auto"
     QString sampleRate;      // 如 "48000", "44100", "Auto"
-    QString channels;        // 如 "Auto", "2" (立体声), "1" (单声道)
+    QString channels;        // 如 "Auto", "2", "1"
     bool overwriteOutput;    // 是否覆盖已有文件
+};
+
+// 后缀诊断信息
+struct ExtensionDiagnosis {
+    bool isSupported;
+    bool isDirectCopyable;
+    QString formatName;
+    QString containerType;
+    QString recommendMode;
+    QString advice;
 };
 
 class FFmpegHelper : public QObject {
@@ -29,15 +39,21 @@ public:
     explicit FFmpegHelper(QObject *parent = nullptr);
     ~FFmpegHelper() override;
 
-    // 格式支持清单
+    // 格式支持清单与诊断接口
     static QStringList supportedVideoExtensions();
     static QStringList supportedAudioFormats();
     static QString getAudioExtensionForFormat(const QString &format);
     static QString getFilterStringForVideoFiles();
+    static ExtensionDiagnosis diagnoseExtension(const QString &rawInput);
 
-    // FFmpeg 探测与校验
+    // 大小预估
+    static double estimateAudioSizeMB(double durationSec, const QString &format, const QString &bitrate);
+    static QString formatSizeString(double sizeMB);
+
+    // FFmpeg 智能寻找与检测
     static QString findFFmpegBinary(const QString &customPath = "");
     static bool checkFFmpegExecutable(const QString &ffmpegPath, QString *versionOut = nullptr);
+    static double probeDurationSeconds(const QString &ffmpegPath, const QString &videoPath);
 
     // 核心提取操作
     void startExtraction(const QString &ffmpegPath, const ExtractionOptions &options);
@@ -57,8 +73,8 @@ private slots:
 
 private:
     void parseFFmpegOutput(const QString &text);
-    double parseTimeToSeconds(const QString &timeStr);
-    QString selectAudioCodec(const QString &format);
+    static double parseTimeToSeconds(const QString &timeStr);
+    static QString selectAudioCodec(const QString &format);
 
     QProcess *m_process;
     ExtractionOptions m_currentOptions;

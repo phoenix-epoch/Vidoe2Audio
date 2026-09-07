@@ -1,77 +1,66 @@
 # 🌌 星空音频分离系统 (Starry Audio Extractor)
 
-基于 **Qt (C++17)** 与 **FFmpeg** 打造的沉浸式星空科技感音视频音频分离与高精转码提取工具。
+基于 **Qt (C++17)**、**FFmpeg** 与 **yt-dlp** 打造的沉浸式星空科技感音视频音频分离与全网流媒体提取工具。
 
 ---
 
-## ✨ 核心特性
+## ✨ 核心亮点与功能特性
 
-1. **🌠 沉浸式星空科技视觉系统**：
-   - 自研轻量级 `QPainter` 动态星空引擎（恒星微移、动态星云光晕、星光闪烁与随机流星掠过特效）。
-   - 赛博朋克深空磨砂玻璃拟态 UI，搭配霓虹青 (`#00f0ff`) 与量子紫 (`#9d4edd`) 发光元素。
-   - 炫酷发光渐变进度条、飞船控制台风格的实时彩色终端日志。
+### 1. 🌠 首页双模式星空选择大厅
+- 采用 **QStackedWidget** 架构，启动进入全屏流星粒子深空导航大厅；
+- 提供两枚赛博发光大卡片供用户自由切换工作台：
+  - `📁 本地音视频提取模式`
+  - `🌐 网络网址提取模式`
+- 各工作台顶部均支持 `[ ⬅️ 返回模式选择 ]` 随心流转。
 
-2. **⚡ 全能音频分离与提取 (FFmpeg 驱动)**：
-   - **全面视频格式支持**：MP4, MKV, AVI, MOV, FLV, WMV, WEBM, TS, M4V, 3GP, RMVB, VOB, MPG, MPEG, OGV, MTS, M2TS 等。
-   - **全面音频输出支持**：MP3, AAC, WAV, FLAC, M4A, OGG, OPUS, WMA, AC3, MKA, ALAC, AIFF 等。
-   - **双提取模式**：
-     - **⚡ 极速无损流拷贝 (`-c:a copy`)**：直接分离音轨，不进行二次重编码，毫秒级极速完成，100% 原始无损音质。
-     - **🎛️ 格式重编码定制 (Transcode)**：自定义输出格式、码率 (320k/256k/192k/128k 等)、采样率 (48000/44100Hz 等) 及声道。
-   - **实时精准进度**：多线程异步调用 `QProcess`，实时解析 FFmpeg 标准流时间戳换算百分比，UI 丝滑不卡顿。
-   - **交互便利**：支持音视频文件**直接拖拽载入**，提取完成后支持一键“打开目录”与“播放音频”。
-   - **FFmpeg 智能探测**：自动识别系统环境变量 `PATH` 与程序同级目录的 `ffmpeg.exe`，支持图形化选择。
+### 2. 📁 本地音视频提取工作台
+- **全格式视频兼容**：支持 MP4, MKV, AVI, MOV, FLV, WMV, WEBM, TS, M4V, 3GP, RMVB, VOB, MPG 等 20+ 种格式；
+- **智能格式后缀诊断**：直接在输入框输入扩展名（如 `mkv`、`rmvb`、`.ts`），系统瞬间反馈支持状态、容器类型与推荐提取模式；
+- **动态音频大小预估**：载入视频后，根据视频时长与用户选择的目标格式/码率（320k/256k/192k/WAV/FLAC 等）**实时精准推算输出文件体积**；
+- **小白级界面减负**：彻底隐去底层 FFmpeg 路径设置，后台静默自动调度；
+- **输出默认保存至桌面**：提取完成自动出现在用户电脑桌面上，开箱即视。
+
+### 3. 🌐 网络网址提取工作台 (方案 A)
+- **海量流媒体平台支持**：基于 `yt-dlp` + 内置 `FFmpeg` 黄金搭档，支持 B站、抖音、YouTube、小红书、微博、Twitter 以及任意 m3u8 / mp4 直链；
+- **一键粘贴与剪贴板识别**：进入界面自动侦测剪贴板网址，支持一键粘贴；
+- **智能文件名解析**：自动解析网页真实视频标题命名音频文件；
+- **合集与播放列表防呆控制**：默认勾选“仅提取单视频”，避免意外下载多集。
+
+### 4. 📦 全内置绿色开箱即用架构
+- 程序核心目录预置 `tools/` 独立工具箱（`tools/ffmpeg.exe` 与 `tools/yt-dlp.exe`）；
+- 小白用户无需配置任何环境变量或第三方依赖，解压即用！
 
 ---
 
-## 🛠️ 项目结构
+## 🛠️ 项目目录结构
 
 ```
 E:\AiToy\video/
-├── CMakeLists.txt              # CMake 工程构建文件 (支持 Qt5 / Qt6)
-├── StarryAudioExtractor.pro    # QMake 项目工程文件 (Qt Creator 原生支持)
+├── CMakeLists.txt              # CMake 跨平台构建文件 (Qt5 / Qt6)
+├── StarryAudioExtractor.pro    # QMake 项目工程文件 (支持 Qt Creator 双击)
 ├── src/
 │   ├── main.cpp                # 应用程序入口与高 DPI 适配
-│   ├── mainwindow.h            # 主界面定义
-│   ├── mainwindow.cpp          # 主界面交互逻辑、拖拽与信号绑定
-│   ├── starrybackground.h      # 动态星空粒子与流星特效头文件
-│   ├── starrybackground.cpp    # 星空引擎渲染实现
-│   ├── ffmpeghelper.h          # FFmpeg 进程调度、格式枚举与参数封装
-│   ├── ffmpeghelper.cpp        # 异步进程执行与进度计算
-│   └── style.h                 # 统一的星空科技感 QSS 样式定义
-└── README.md                   # 本说明文档
+│   ├── mainwindow.h            # 主界面类定义
+│   ├── mainwindow.cpp          # 双模式流转、后缀诊断、大小预估与业务逻辑
+│   ├── mainwindow.ui           # Qt Designer 可视化设计器文件 (三页栈结构)
+│   ├── starrybackground.h      # 动态星空粒子与流星特效引擎
+│   ├── starrybackground.cpp    # 粒子绘制与星云渲染实现
+│   ├── ffmpeghelper.h          # 本地 FFmpeg 调度、格式诊断与大小估算
+│   ├── ffmpeghelper.cpp        # 异步进程解析与时长探测
+│   ├── urlextractorhelper.h    # 网络流媒体 yt-dlp 调度引擎
+│   ├── urlextractorhelper.cpp  # 网络下载速度与转码进度解析
+│   └── style.h                 # 统一深空霓虹科技感 QSS 样式表
+├── tools/                      # 内置独立引擎存放目录
+├── Release_Package/            # 独立免安装运行发布包目录
+└── StarryAudioExtractor_v1.0.0_Release_x64.zip # 独立分发压缩包 (约 26.9 MB)
 ```
 
 ---
 
 ## 🚀 编译与调试指南
 
-本项目同时支持 **QMake** 与 **CMake**，兼容 **Qt 5 (5.12+)** 与 **Qt 6.x**，编译器支持 **MinGW** 或 **MSVC (2019/2022)**。
-
-### 方式一：使用 Qt Creator (推荐)
-
-1. 打开 **Qt Creator**。
-2. 点击菜单栏 **【文件】 -> 【打开文件或项目】**。
-3. 选择以下任意一个工程文件：
-   - `E:\AiToy\video\StarryAudioExtractor.pro` (QMake 构建)
-   - 或 `E:\AiToy\video\CMakeLists.txt` (CMake 构建)
-4. 在 Kit 配置界面中勾选你的 Qt 编译套件（例如 `Desktop Qt 6.5.x MinGW 64-bit` 或 `MSVC2019 64-bit`）。
-5. 点击左下角绿色 **【运行 (Ctrl+R)】** 或 **【调试 (F5)】** 按钮即可一键编译并启动！
-
-### 方式二：命令行 CMake 构建
-
-```bash
-cd E:\AiToy\video
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-```
-
----
-
-## 📦 FFmpeg 准备
-
-本软件依赖 `ffmpeg.exe` 执行底层音视频解封装与转码：
-1. **自动识别**：如果您已将 FFmpeg 安装并添加到了系统环境变量 `PATH`，软件启动后会自动检测到。
-2. **免安装放置**：您也可以下载 Windows 版的 `ffmpeg.exe`，直接放置在编译生成的 `.exe` 同级目录下。
-3. **手动指定**：也可以直接在软件界面右下角点击 **【🛠️ 指定 FFmpeg】** 按钮选择任意路径下的 `ffmpeg.exe`。
+1. 启动 **Qt Creator**；
+2. 打开 `CMakeLists.txt` 或 `StarryAudioExtractor.pro`；
+3. 选择 Kits 套件（如 `MinGW 64-bit` 或 `MSVC 64-bit`）；
+4. 在左侧 `Forms` 下可双击 `mainwindow.ui` 进行可视化拖拽编辑；
+5. 按快捷键 **Ctrl + R** 即可一键编译启动！
