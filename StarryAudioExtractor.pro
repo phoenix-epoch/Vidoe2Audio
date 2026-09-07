@@ -22,6 +22,7 @@ SOURCES += \
     src/mainwindow.cpp \
     src/starrybackground.cpp \
     src/starrytitlebar.cpp \
+    src/starryformatsdialog.cpp \
     src/ffmpeghelper.cpp \
     src/urlextractorhelper.cpp
 
@@ -29,6 +30,7 @@ HEADERS += \
     src/mainwindow.h \
     src/starrybackground.h \
     src/starrytitlebar.h \
+    src/starryformatsdialog.h \
     src/ffmpeghelper.h \
     src/urlextractorhelper.h \
     src/style.h

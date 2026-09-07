@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "starrytitlebar.h"
+#include "starryformatsdialog.h"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDesktopServices>
@@ -304,19 +305,8 @@ void MainWindow::onBrowseOutputDir() {
 }
 
 void MainWindow::onShowFormatsDialog() {
-    QString msg =
-        "<h3>🌌 支持提取的音视频格式清单 (FFmpeg 驱动)</h3>"
-        "<p>本软件支持市面上 <b>99%</b> 的多媒体格式：</p>"
-        "<ul>"
-        "<li><b>主流通用格式：</b>MP4, MKV, MOV (苹果), AVI, WebM</li>"
-        "<li><b>流媒体与网络录制：</b>FLV, TS, M4V, F4V, OGV</li>"
-        "<li><b>高清与摄像机原盘：</b>MTS, M2TS (蓝光), VOB (DVD), WMV</li>"
-        "<li><b>经典与老旧格式：</b>RMVB, RM, 3GP, MPG, MPEG, ASF, DIVX</li>"
-        "<li><b>冷门专用封装：</b>DAV, MXF, BIK, NUT 等</li>"
-        "</ul>"
-        "<p>💡 <i>提示：您也可以直接在主界面输入框内输入后缀（如 <code>rmvb</code>、<code>mkv</code>）回车，系统将即刻提供专属诊断建议！</i></p>";
-
-    QMessageBox::information(this, "支持格式清单", msg);
+    StarryFormatsDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::onStartOrCancelLocalClicked() {

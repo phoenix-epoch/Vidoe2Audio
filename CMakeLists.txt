@@ -27,6 +27,8 @@ set(SOURCES
     src/starrybackground.cpp
     src/starrytitlebar.h
     src/starrytitlebar.cpp
+    src/starryformatsdialog.h
+    src/starryformatsdialog.cpp
     src/ffmpeghelper.h
     src/ffmpeghelper.cpp
     src/urlextractorhelper.h

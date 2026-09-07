@@ -8,6 +8,7 @@
 #include <QPainterPath>
 #include <QMouseEvent>
 #include <QLinearGradient>
+#include <QWindow>
 
 StarryFormatsDialog::StarryFormatsDialog(QWidget *parent)
     : QDialog(parent)
@@ -287,14 +288,28 @@ void StarryFormatsDialog::paintEvent(QPaintEvent *event) {
 
 void StarryFormatsDialog::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        m_dragPos = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        if (windowHandle()) {
+            windowHandle()->startSystemMove();
+        } else {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            m_dragPos = event->globalPosition().toPoint() - frameGeometry().topLeft();
+#else
+            m_dragPos = event->globalPos() - frameGeometry().topLeft();
+#endif
+        }
     }
     QDialog::mousePressEvent(event);
 }
 
 void StarryFormatsDialog::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
-        move(event->globalPosition().toPoint() - m_dragPos);
+        if (!m_dragPos.isNull()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            move(event->globalPosition().toPoint() - m_dragPos);
+#else
+            move(event->globalPos() - m_dragPos);
+#endif
+        }
     }
     QDialog::mouseMoveEvent(event);
 }
