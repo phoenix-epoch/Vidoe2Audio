@@ -234,12 +234,12 @@
             <item>
              <layout class="QHBoxLayout" name="localNavRow">
               <item>
-               <widget class="QPushButton" name="backFromLocalBtn">
+               <widget class="QPushButton" name="showFormatsBtn">
                 <property name="cursor">
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="text">
-                 <string>⬅️ 返回模式选择</string>
+                 <string>ℹ️ 支持格式清单</string>
                 </property>
                </widget>
               </item>
@@ -267,12 +267,12 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="showFormatsBtn">
+               <widget class="QPushButton" name="backFromLocalBtn">
                 <property name="cursor">
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="text">
-                 <string>ℹ️ 支持格式清单</string>
+                 <string>⬅️ 返回模式选择</string>
                 </property>
                </widget>
               </item>
@@ -718,22 +718,22 @@
             <item>
              <layout class="QHBoxLayout" name="urlNavRow">
               <item>
-               <widget class="QPushButton" name="backFromUrlBtn">
-                <property name="cursor">
-                 <cursorShape>PointingHandCursor</cursorShape>
-                </property>
-                <property name="text">
-                 <string>⬅️ 返回模式选择</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QLabel" name="urlHeaderTitle">
                 <property name="text">
                  <string>🌐 网络网址音视频提取工作台</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">font-size: 16px; font-weight: bold; color: #00f0ff;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="urlEngineBadge">
+                <property name="styleSheet">
+                 <string notr="true">color: #00ff88; font-weight: bold; font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>● yt-dlp + FFmpeg 引擎已就绪</string>
                 </property>
                </widget>
               </item>
@@ -751,12 +751,12 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="urlEngineBadge">
-                <property name="styleSheet">
-                 <string notr="true">color: #00ff88; font-weight: bold; font-size: 11px;</string>
+               <widget class="QPushButton" name="backFromUrlBtn">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="text">
-                 <string>● yt-dlp + FFmpeg 引擎已就绪</string>
+                 <string>⬅️ 返回模式选择</string>
                 </property>
                </widget>
               </item>

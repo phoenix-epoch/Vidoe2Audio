@@ -99,15 +99,47 @@ void UrlExtractorHelper::startExtraction(const QString &ffmpegPath, const UrlExt
                             .arg(options.url, options.videoContainer.toUpper(), options.videoResolution), "INFO");
     }
 
+    // 智能直连策略：针对国内主流网站（B站、抖音、小红书、微博、快手等）默认使用本地直连
+    // 彻底避免用户本地代理软件（如 Clash 7890）关闭或未启动时触发 [WinError 10061] 目标积极拒绝报错
+    QString lowerUrl = options.url.toLower();
+    bool isDomesticSite = lowerUrl.contains("bilibili.com") ||
+                          lowerUrl.contains("b23.tv") ||
+                          lowerUrl.contains("douyin.com") ||
+                          lowerUrl.contains("iesdouyin.com") ||
+                          lowerUrl.contains("xiaohongshu.com") ||
+                          lowerUrl.contains("xhslink.com") ||
+                          lowerUrl.contains("weibo.com") ||
+                          lowerUrl.contains("kuaishou.com") ||
+                          lowerUrl.contains("qq.com") ||
+                          lowerUrl.contains("youku.com") ||
+                          lowerUrl.contains("iqiyi.com");
+    if (isDomesticSite) {
+        args << "--proxy" << "";
+    }
+
     args << "-o" << outTemplate;
     args << options.url.trimmed();
 
     emit logMessage(QString("💾 目标输出目录 (默认桌面): %1").arg(options.outputDirectory), "INFO");
+    if (isDomesticSite) {
+        emit logMessage("⚡ 检测到国内主流媒体，已自动启用高速直连通道（绕过本地代理冲突）", "INFO");
+    }
     emit started();
     emit progressUpdated(0, "0 KB/s", "--:--");
 
     m_process = new QProcess(this);
     m_process->setProcessChannelMode(QProcess::MergedChannels);
+
+    if (isDomesticSite) {
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.remove("HTTP_PROXY");
+        env.remove("HTTPS_PROXY");
+        env.remove("ALL_PROXY");
+        env.remove("http_proxy");
+        env.remove("https_proxy");
+        env.remove("all_proxy");
+        m_process->setProcessEnvironment(env);
+    }
 
     connect(m_process, &QProcess::readyRead, this, &UrlExtractorHelper::onProcessReadyRead);
     connect(m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -213,6 +245,9 @@ void UrlExtractorHelper::parseYtDlpLine(const QString &line) {
     if (trimmed.startsWith("[info]")) {
         emit logMessage(trimmed, "INFO");
     } else if (trimmed.startsWith("ERROR:")) {
+        if (trimmed.contains("Unable to connect to proxy") || trimmed.contains("10061")) {
+            emit logMessage("⚠️ 代理异常检测：系统代理端口（如 127.0.0.1:7890）拒绝连接。若下载外网视频（如YouTube）请先启动代理软件；若为国内视频已自动采用直连。", "WARNING");
+        }
         emit logMessage(trimmed, "ERROR");
     }
 }
