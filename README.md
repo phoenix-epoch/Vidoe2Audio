@@ -7,8 +7,8 @@
 > ### ⚡ 快速使用指南（普通用户开箱即用）
 > **无需安装 Qt！无需配置任何 C++ 编译环境！无需单独下载配置 FFmpeg！**
 > 
-> 1. 直接下载本仓库根目录下的绿色便携压缩包：  
->    👉 **[`StarryAudioExtractor_v1.0.0_Release_x64.zip`](StarryAudioExtractor_v1.0.0_Release_x64.zip)**（或前往 [Releases 发布页](../../releases) 下载最新发行版）；
+> 1. 前往 GitHub **[Releases 发布页](../../releases)** 下载最新绿色便携压缩包（或在 release 分支获取）：  
+>    👉 **`StarryAudioExtractor_v1.0.0_Release_x64.zip`**；
 > 2. 将压缩包解压到任意文件夹（例如解压到桌面或 D 盘）；
 > 3. 双击解压出来的 **`StarryAudioExtractor.exe`**，即可直接启动并使用！
 > 
